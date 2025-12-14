@@ -1,0 +1,46 @@
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/>
+    <link rel="stylesheet" href="~/WebApplication5.styles.css" asp-append-version="true"/>
+    <title>Панель ветеринара - Ветеринарная клиника</title>
+</head>
+<body>
+<div class="container">
+    <div id="admin">
+        <div style="margin-bottom: 1.5rem;">
+            <h2>Все записи в системе</h2>
+            <p style="color: var(--text-secondary);">Просмотр всех записей клиентов</p>
+        </div>
+
+        <div style="overflow-x: auto;">
+            <table class="admin-table" id="adminTable">
+                <thead>
+                <tr>
+                    <th>ФИО</th>
+                    <th>Животное</th>
+                    <th>Кличка</th>
+                    <th>Телефон</th>
+                    <th>Дата</th>
+                    <th>Время</th>
+                </tr>
+                </thead>
+                <tbody id="adminTableBody">
+                <!-- Table rows will be inserted here -->
+                </tbody>
+            </table>
+        </div>
+
+        <div id="noRecords" class="empty-state" style="margin-top: 2rem;">
+            <div class="empty-state-icon">📊</div>
+            <p>Нет записей в системе</p>
+        </div>
+    </div>
+</div>
+</body>
+</html>

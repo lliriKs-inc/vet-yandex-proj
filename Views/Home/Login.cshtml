@@ -1,0 +1,68 @@
+@model LoginViewModel
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Вход - Ветеринарная клиника</title>
+
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/>
+</head>
+<body>
+
+<div class="container">
+    <div style="max-width: 400px; margin: 5rem auto; background: white; padding: 2rem; border-radius: 8px;">
+
+        <div style="text-align: center; margin-bottom: 2rem;">
+            <div style="font-size: 3rem;">🐾</div>
+            <h2>Вход</h2>
+            <p>Войдите в свой аккаунт</p>
+        </div>
+
+        @* Общая ошибка *@
+        @if (!ViewData.ModelState.IsValid)
+        {
+            <div class="alert alert-danger">
+                @Html.ValidationSummary(false)
+            </div>
+        }
+
+        <form asp-controller="Account"
+              asp-action="Login"
+              method="post">
+
+            @Html.AntiForgeryToken()
+
+            <div class="form-group mb-3">
+                <label>Email</label>
+                <input asp-for="Email" class="form-control"/>
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label>Пароль</label>
+                <input asp-for="Password" class="form-control"/>
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary w-100">
+                Войти
+            </button>
+        </form>
+
+        <p style="text-align: center; margin-top: 1rem;">
+            Нет аккаунта?
+            <a asp-controller="Home" asp-action="Register">
+                Зарегистрироваться
+            </a>
+        </p>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial"/>
+}
+
+</body>
+</html>

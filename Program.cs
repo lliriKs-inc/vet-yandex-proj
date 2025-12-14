@@ -9,7 +9,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddIdentity<IdentityUser, IdentityRole>()
+builder.Services.AddIdentity<AppUser, IdentityRole>()
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
 
@@ -17,7 +17,7 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>()
 // Add services to the container.
 builder.Services.ConfigureApplicationCookie(options =>
 {
-    options.LoginPath = "/Account/Login";
+    options.LoginPath = "/Home/Login";
     options.AccessDeniedPath = "/Account/AccessDenied";
 });
 
@@ -54,6 +54,7 @@ using (var scope = app.Services.CreateScope())
 app.MapStaticAssets();
 app.UseAuthentication();
 app.UseAuthorization();
+
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")

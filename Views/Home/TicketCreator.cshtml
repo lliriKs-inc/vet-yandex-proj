@@ -1,0 +1,76 @@
+@model CreateAppointmentViewModel
+@{
+    ViewData["Title"] = "Запись на приём";
+}
+
+<div class="container">
+    <div style="max-width: 600px; margin: 0 auto; background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1);">
+
+        <h2 class="mb-4">Запись на приём</h2>
+
+        <form asp-action="TicketCreator" method="post">
+            <div class="form-group mb-3">
+                <label asp-for="FullName"></label>
+                <input asp-for="FullName" class="form-control" />
+                <span asp-validation-for="FullName" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="AnimalType"></label>
+                <select asp-for="AnimalType" class="form-select">
+                    <option value="">Выберите животное</option>
+                    <option>Собака</option>
+                    <option>Кошка</option>
+                    <option>Птица</option>
+                    <option>Грызун</option>
+                    <option>Рыба</option>
+                    <option>Другое</option>
+                </select>
+                <span asp-validation-for="AnimalType" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Nickname"></label>
+                <input asp-for="Nickname" class="form-control" />
+                <span asp-validation-for="Nickname" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="PhoneNumber"></label>
+                <input asp-for="PhoneNumber" class="form-control" />
+                <span asp-validation-for="PhoneNumber" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-3">
+                <label asp-for="Date"></label>
+                <input asp-for="Date" class="form-control" min="@DateTime.Today.ToString("yyyy-MM-dd")"/>
+                <span asp-validation-for="Date" class="text-danger"></span>
+            </div>
+
+            <div class="form-group mb-4">
+                <label asp-for="Time"></label>
+                <input asp-for="Time" class="form-control" 
+                       min="09:00"
+                       max="20:00"
+                       step="1800"/>
+                <span asp-validation-for="Time" class="text-danger"></span>
+            </div>
+
+            <div class="d-flex gap-3">
+                <button type="submit" class="btn btn-primary w-100">
+                    Создать запись
+                </button>
+
+                <a asp-controller="Home"
+                   asp-action="Index"
+                   class="btn btn-secondary w-100">
+                    Отмена
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+@section Scripts {
+    <partial name="_ValidationScriptsPartial" />
+}

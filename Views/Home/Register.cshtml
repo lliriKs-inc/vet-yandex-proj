@@ -1,0 +1,77 @@
+@model RegisterViewModel
+
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/>
+    <link rel="stylesheet" href="~/WebApplication5.styles.css" asp-append-version="true"/>
+    <title>Регистрация - Ветеринарная клиника</title>
+</head>
+<body>
+<div class="container">
+    <div style="max-width: 400px; margin: 5rem auto; background: white; padding: 2rem; border-radius: 8px;">
+        <h2 style="text-align:center;">Регистрация</h2>
+
+        <form asp-controller="Home"
+              asp-action="Register"
+              method="post">
+
+            @Html.AntiForgeryToken()
+            <div class="form-group">
+                <label>Фамилия</label>
+                <input asp-for="Surname" class="form-control"/>
+                <span asp-validation-for="Surname" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label>Имя</label>
+                <input asp-for="Name" class="form-control"/>
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="form-group">
+                <label>Отчество</label>
+                <input asp-for="Patronymic" class="form-control"/>
+                <span asp-validation-for="Patronymic" class="text-danger"></span>
+            </div>
+            
+            <div class="form-group">
+                <label>Телефон</label>
+                <input asp-for="Phone" class="form-control"/>
+                <span asp-validation-for="Phone" class="text-danger"></span>
+            </div>
+            
+            <div class="form-group">
+                <label>Email</label>
+                <input asp-for="Email" class="form-control"/>
+                <span asp-validation-for="Email" class="text-danger"></span>
+            </div>
+            
+            <div class="form-group">
+                <label>Пароль</label>
+                <input asp-for="Password" class="form-control"/>
+                <span asp-validation-for="Password" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label>Подтверждение пароля</label>
+                <input asp-for="ConfirmPassword" class="form-control"/>
+                <span asp-validation-for="ConfirmPassword" class="text-danger"></span>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-full-width">
+                Зарегистрироваться
+            </button>
+        </form>
+
+        <p style="text-align:center; margin-top:1rem;">
+            Уже есть аккаунт?
+            <a asp-controller="Home" asp-action="Login">Войти</a>
+        </p>
+    </div>
+</div>
+</body>
+</html>

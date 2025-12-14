@@ -10,166 +10,13 @@
 </head>
 <body>
     <!-- Header -->
-    <header>
-        <nav>
-            <div class="logo">Ветклиника "Забота"</div>
-            <ul class="nav-menu">
-                <li><a href="#" class="nav-link active" data-page="dashboard">Мой кабинет</a></li>
-                <li><a href="#" class="nav-link" data-page="appointment">Записаться</a></li>
-                <li><a href="#" class="nav-link" data-page="admin">Админ-панель</a></li>
-                <li><a href="#" class="nav-link" data-page="login" id="logout-link">Выход</a></li>
-            </ul>
-        </nav>
-    </header>
-
     <div class="container">
         <!-- Dashboard Page -->
-
         <!-- Appointment Creation Page -->
-        <div id="appointment" class="page">
-            <div style="max-width: 600px; margin: 0 auto; background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
-                <h2 style="margin-bottom: 1.5rem;">Запись на прием</h2>
-                <form id="appointmentForm">
-                    <div class="form-group">
-                        <label for="fio">ФИО</label>
-                        <input type="text" id="fio" required placeholder="Иван Иванов">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="animal">Тип животного</label>
-                        <select id="animal" required>
-                            <option value="">Выберите животное</option>
-                            <option value="Собака">Собака</option>
-                            <option value="Кошка">Кошка</option>
-                            <option value="Птица">Птица</option>
-                            <option value="Грызун">Грызун</option>
-                            <option value="Рыба">Рыба</option>
-                            <option value="Другое">Другое</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="nickname">Кличка животного</label>
-                        <input type="text" id="nickname" required placeholder="Мухтар">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="phone">Номер телефона</label>
-                        <input type="tel" id="phone" required placeholder="+7 (999) 123-45-67">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="date">Дата записи</label>
-                        <input type="date" id="date" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label for="time">Время записи</label>
-                        <input type="time" id="time" required>
-                    </div>
-
-                    <div style="display: flex; gap: 1rem;">
-                        <button type="submit" class="btn btn-primary btn-full-width">Создать запись</button>
-                        <button type="button" class="btn btn-secondary btn-full-width" onclick="goToPage('dashboard')">Отмена</button>
-                    </div>
-                </form>
-            </div>
-        </div>
-
         <!-- Admin Page -->
-        <div id="admin" class="page">
-            <div style="margin-bottom: 1.5rem;">
-                <h2>Все записи в системе</h2>
-                <p style="color: var(--text-secondary);">Просмотр всех записей клиентов</p>
-            </div>
-
-            <div style="overflow-x: auto;">
-                <table class="admin-table" id="adminTable">
-                    <thead>
-                        <tr>
-                            <th>ФИО</th>
-                            <th>Животное</th>
-                            <th>Кличка</th>
-                            <th>Телефон</th>
-                            <th>Дата</th>
-                            <th>Время</th>
-                        </tr>
-                    </thead>
-                    <tbody id="adminTableBody">
-                        <!-- Table rows will be inserted here -->
-                    </tbody>
-                </table>
-            </div>
-
-            <div id="noRecords" class="empty-state" style="margin-top: 2rem;">
-                <div class="empty-state-icon">📊</div>
-                <p>Нет записей в системе</p>
-            </div>
-        </div>
-
         <!-- Login Page -->
-        <div id="login" class="page">
-            <div style="max-width: 400px; margin: 5rem auto; background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
-                <div style="text-align: center; margin-bottom: 2rem;">
-                    <div style="font-size: 3rem; margin-bottom: 1rem;">🐾</div>
-                    <h2 style="margin: 0;">Вход</h2>
-                    <p style="color: var(--text-secondary); margin-top: 0.5rem;">Войдите в свой аккаунт</p>
-                </div>
-
-                <form id="loginForm">
-                    <div class="form-group">
-                        <label for="loginEmail">Email/Логин</label>
-                        <input type="text" id="loginEmail" required placeholder="ivan@example.com">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="loginPassword">Пароль</label>
-                        <input type="password" id="loginPassword" required placeholder="••••••••">
-                    </div>
-
-                    <button type="submit" class="btn btn-primary btn-full-width">Войти</button>
-
-                    <p style="text-align: center; margin-top: 1rem; color: var(--text-secondary);">
-                        Нет аккаунта? <a href="#" onclick="goToPage('register'); return false;" style="color: var(--primary-color); font-weight: 600;">Зарегистрироваться</a>
-                    </p>
-                </form>
-            </div>
-        </div>
 
         <!-- Register Page -->
-        <div id="register" class="page">
-            <div style="max-width: 400px; margin: 5rem auto; background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
-                <div style="text-align: center; margin-bottom: 2rem;">
-                    <div style="font-size: 3rem; margin-bottom: 1rem;">🐾</div>
-                    <h2 style="margin: 0;">Регистрация</h2>
-                    <p style="color: var(--text-secondary); margin-top: 0.5rem;">Создайте новый аккаунт</p>
-                </div>
-
-                <form id="registerForm">
-                    <div class="form-group">
-                        <label for="regEmail">Email/Логин</label>
-                        <input type="text" id="regEmail" required placeholder="ivan@example.com">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="regPassword">Пароль</label>
-                        <input type="password" id="regPassword" required placeholder="••••••••">
-                    </div>
-
-                    <div class="form-group">
-                        <label for="regPasswordConfirm">Подтверждение пароля</label>
-                        <input type="password" id="regPasswordConfirm" required placeholder="••••••••">
-                    </div>
-
-                    <button type="submit" class="btn btn-primary btn-full-width">Зарегистрироваться</button>
-
-                    <p style="text-align: center; margin-top: 1rem; color: var(--text-secondary);">
-                        Уже есть аккаунт? <a href="#" onclick="goToPage('login'); return false;" style="color: var(--primary-color); font-weight: 600;">Войти</a>
-                    </p>
-                </form>
-            </div>
-        </div>
-    </div>
 
     <!-- Edit Appointment Modal -->
     <div id="editModal" class="modal">
@@ -222,6 +69,7 @@
                 </div>
             </form>
         </div>
+    </div>
     </div>
 
     <script>

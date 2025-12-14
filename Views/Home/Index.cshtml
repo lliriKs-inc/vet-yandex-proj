@@ -1,8 +1,80 @@
-﻿@{
-    ViewData["Title"] = "Home Page";
+@model DashboardViewModel
+@{
+    ViewData["Title"] = "Личный кабинет";
 }
 
-<div class="text-center">
-    <h1 class="display-4">Welcome</h1>
-    <p>Learn about <a href="https://learn.microsoft.com/aspnet/core">building Web apps with ASP.NET Core</a>.</p>
+<div class="container">
+    <div class="dashboard-grid">
+
+        <!-- Profile Section -->
+        <div class="profile-section">
+            <div class="profile-header">
+                <div class="profile-avatar">👤</div>
+                <div class="profile-info">
+                    <h2>@Model.FullName</h2>
+                    <p>Email: @Model.Email</p>
+                </div>
+            </div>
+
+            <div class="profile-details">
+                <div class="detail-item">
+                    <strong>Email</strong>
+                    <span>@Model.Email</span>
+                </div>
+
+                <div class="detail-item">
+                    <strong>Телефон</strong>
+                    <span>@Model.PhoneNumber</span>
+                </div>
+
+                <div class="detail-item">
+                    <strong>Питомцы</strong>
+                    <span>@Model.PetsCount</span>
+                </div>
+
+                <div class="detail-item">
+                    <strong>Статус</strong>
+                    <span class="text-success">Активный клиент</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Appointments Section -->
+        <div class="appointments-section">
+            <div class="section-header">
+                <h2>Мои записи</h2>
+                <a asp-controller="Home"
+                   asp-action="TicketCreator"
+                   class="btn btn-primary">
+                    + Новая запись
+                </a>
+            </div>
+
+            @if (Model.Appointments.Any())
+            {
+                <div class="appointments-list">
+                    @foreach (var item in Model.Appointments)
+                    {
+                        <div class="appointment-card">
+                            <strong>@item.AnimalType</strong> — @item.Nickname <br />
+                            @item.Date.ToString("dd.MM.yyyy HH:mm")
+                        </div>
+                    }
+                </div>
+            }
+            else
+            {
+                <div class="empty-state">
+                    <div class="empty-state-icon">📋</div>
+                    <p>У вас нет активных записей</p>
+                    <a asp-controller="Home"
+                       asp-action="TicketCreator"
+                       class="btn btn-primary">
+                        Сделать первую запись
+                    </a>
+                </div>
+            }
+        </div>
+
+    </div>
 </div>
