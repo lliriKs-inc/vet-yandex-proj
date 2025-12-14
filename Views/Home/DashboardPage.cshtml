@@ -1,0 +1,66 @@
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/>
+    <link rel="stylesheet" href="~/WebApplication5.styles.css" asp-append-version="true"/>
+    <title>Личный кабинет - Дашборд</title>
+</head>
+<body>
+<div id="dashboard" class="page active">
+            <div class="dashboard-grid">
+                <!-- Profile Section -->
+                <div class="profile-section">
+                    <div class="profile-header">
+                        <div class="profile-avatar">👤</div>
+                        <div class="profile-info">
+                            <h2 id="userName">Иван Иванов</h2>
+                            <p>ID клиента: 12345</p>
+                        </div>
+                    </div>
+
+                    <div class="profile-details">
+                        <div class="detail-item">
+                            <strong>Email</strong>
+                            <span id="userEmail">ivan@example.com</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Телефон</strong>
+                            <span id="userPhone">+7 (999) 123-45-67</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Питомцы</strong>
+                            <span id="userPets">3 питомца</span>
+                        </div>
+                        <div class="detail-item">
+                            <strong>Статус</strong>
+                            <span style="color: var(--primary-color);">Активный клиент</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Appointments Section -->
+                <div class="appointments-section">
+                    <div class="section-header">
+                        <h2>Мои записи</h2>
+                        <button class="btn btn-primary" onclick="goToPage('appointment')">+ Новая запись</button>
+                    </div>
+
+                    <div class="appointments-list" id="appointmentsList">
+                        <!-- Appointments will be inserted here -->
+                    </div>
+
+                    <div id="noAppointments" class="empty-state">
+                        <div class="empty-state-icon">📋</div>
+                        <p>У вас нет активных записей</p>
+                        <button class="btn btn-primary" style="margin-top: 1rem;" onclick="goToPage('appointment')">Сделать первую запись</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+</body>
+</html>

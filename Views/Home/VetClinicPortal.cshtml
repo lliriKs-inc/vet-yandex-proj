@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/>
+    <link rel="stylesheet" href="~/WebApplication5.styles.css" asp-append-version="true"/>
+    <title>Личный кабинет - Ветеринарная клиника</title>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <nav>
+            <div class="logo">Ветклиника "Забота"</div>
+            <ul class="nav-menu">
+                <li><a href="#" class="nav-link active" data-page="dashboard">Мой кабинет</a></li>
+                <li><a href="#" class="nav-link" data-page="appointment">Записаться</a></li>
+                <li><a href="#" class="nav-link" data-page="admin">Админ-панель</a></li>
+                <li><a href="#" class="nav-link" data-page="login" id="logout-link">Выход</a></li>
+            </ul>
+        </nav>
+    </header>
+
+    <div class="container">
+        <!-- Dashboard Page -->
+
+        <!-- Appointment Creation Page -->
+        <div id="appointment" class="page">
+            <div style="max-width: 600px; margin: 0 auto; background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
+                <h2 style="margin-bottom: 1.5rem;">Запись на прием</h2>
+                <form id="appointmentForm">
+                    <div class="form-group">
+                        <label for="fio">ФИО</label>
+                        <input type="text" id="fio" required placeholder="Иван Иванов">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="animal">Тип животного</label>
+                        <select id="animal" required>
+                            <option value="">Выберите животное</option>
+                            <option value="Собака">Собака</option>
+                            <option value="Кошка">Кошка</option>
+                            <option value="Птица">Птица</option>
+                            <option value="Грызун">Грызун</option>
+                            <option value="Рыба">Рыба</option>
+                            <option value="Другое">Другое</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="nickname">Кличка животного</label>
+                        <input type="text" id="nickname" required placeholder="Мухтар">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="phone">Номер телефона</label>
+                        <input type="tel" id="phone" required placeholder="+7 (999) 123-45-67">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="date">Дата записи</label>
+                        <input type="date" id="date" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="time">Время записи</label>
+                        <input type="time" id="time" required>
+                    </div>
+
+                    <div style="display: flex; gap: 1rem;">
+                        <button type="submit" class="btn btn-primary btn-full-width">Создать запись</button>
+                        <button type="button" class="btn btn-secondary btn-full-width" onclick="goToPage('dashboard')">Отмена</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <!-- Admin Page -->
+        <div id="admin" class="page">
+            <div style="margin-bottom: 1.5rem;">
+                <h2>Все записи в системе</h2>
+                <p style="color: var(--text-secondary);">Просмотр всех записей клиентов</p>
+            </div>
+
+            <div style="overflow-x: auto;">
+                <table class="admin-table" id="adminTable">
+                    <thead>
+                        <tr>
+                            <th>ФИО</th>
+                            <th>Животное</th>
+                            <th>Кличка</th>
+                            <th>Телефон</th>
+                            <th>Дата</th>
+                            <th>Время</th>
+                        </tr>
+                    </thead>
+                    <tbody id="adminTableBody">
+                        <!-- Table rows will be inserted here -->
+                    </tbody>
+                </table>
+            </div>
+
+            <div id="noRecords" class="empty-state" style="margin-top: 2rem;">
+                <div class="empty-state-icon">📊</div>
+                <p>Нет записей в системе</p>
+            </div>
+        </div>
+
+        <!-- Login Page -->
+        <div id="login" class="page">
+            <div style="max-width: 400px; margin: 5rem auto; background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
+                <div style="text-align: center; margin-bottom: 2rem;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">🐾</div>
+                    <h2 style="margin: 0;">Вход</h2>
+                    <p style="color: var(--text-secondary); margin-top: 0.5rem;">Войдите в свой аккаунт</p>
+                </div>
+
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label for="loginEmail">Email/Логин</label>
+                        <input type="text" id="loginEmail" required placeholder="ivan@example.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="loginPassword">Пароль</label>
+                        <input type="password" id="loginPassword" required placeholder="••••••••">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-full-width">Войти</button>
+
+                    <p style="text-align: center; margin-top: 1rem; color: var(--text-secondary);">
+                        Нет аккаунта? <a href="#" onclick="goToPage('register'); return false;" style="color: var(--primary-color); font-weight: 600;">Зарегистрироваться</a>
+                    </p>
+                </form>
+            </div>
+        </div>
+
+        <!-- Register Page -->
+        <div id="register" class="page">
+            <div style="max-width: 400px; margin: 5rem auto; background: white; padding: 2rem; border-radius: 8px; box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);">
+                <div style="text-align: center; margin-bottom: 2rem;">
+                    <div style="font-size: 3rem; margin-bottom: 1rem;">🐾</div>
+                    <h2 style="margin: 0;">Регистрация</h2>
+                    <p style="color: var(--text-secondary); margin-top: 0.5rem;">Создайте новый аккаунт</p>
+                </div>
+
+                <form id="registerForm">
+                    <div class="form-group">
+                        <label for="regEmail">Email/Логин</label>
+                        <input type="text" id="regEmail" required placeholder="ivan@example.com">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="regPassword">Пароль</label>
+                        <input type="password" id="regPassword" required placeholder="••••••••">
+                    </div>
+
+                    <div class="form-group">
+                        <label for="regPasswordConfirm">Подтверждение пароля</label>
+                        <input type="password" id="regPasswordConfirm" required placeholder="••••••••">
+                    </div>
+
+                    <button type="submit" class="btn btn-primary btn-full-width">Зарегистрироваться</button>
+
+                    <p style="text-align: center; margin-top: 1rem; color: var(--text-secondary);">
+                        Уже есть аккаунт? <a href="#" onclick="goToPage('login'); return false;" style="color: var(--primary-color); font-weight: 600;">Войти</a>
+                    </p>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Appointment Modal -->
+    <div id="editModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Редактировать запись</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <form id="editForm">
+                <div class="form-group">
+                    <label for="editFio">ФИО</label>
+                    <input type="text" id="editFio" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="editAnimal">Тип животного</label>
+                    <select id="editAnimal" required>
+                        <option value="Собака">Собака</option>
+                        <option value="Кошка">Кошка</option>
+                        <option value="Птица">Птица</option>
+                        <option value="Грызун">Грызун</option>
+                        <option value="Рыба">Рыба</option>
+                        <option value="Другое">Другое</option>
+                    </select>
+                </div>
+
+                <div class="form-group">
+                    <label for="editNickname">Кличка животного</label>
+                    <input type="text" id="editNickname" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="editPhone">Номер телефона</label>
+                    <input type="tel" id="editPhone" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="editDate">Дата записи</label>
+                    <input type="date" id="editDate" required>
+                </div>
+
+                <div class="form-group">
+                    <label for="editTime">Время записи</label>
+                    <input type="time" id="editTime" required>
+                </div>
+
+                <div style="display: flex; gap: 1rem;">
+                    <button type="submit" class="btn btn-primary btn-full-width">Сохранить</button>
+                    <button type="button" class="btn btn-secondary btn-full-width" onclick="closeModal()">Отмена</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        // Data storage
+        let appointments = [
+            {
+                id: 1,
+                fio: 'Иван Иванов',
+                animal: 'Собака',
+                nickname: 'Мухтар',
+                phone: '+7 (999) 123-45-67',
+                date: '2025-12-15',
+                time: '14:30'
+            },
+            {
+                id: 2,
+                fio: 'Иван Иванов',
+                animal: 'Кошка',
+                nickname: 'Мурка',
+                phone: '+7 (999) 123-45-67',
+                date: '2025-12-20',
+                time: '10:00'
+            }
+        ];
+
+        let currentEditingId = null;
+
+        // Page navigation
+        function goToPage(pageName) {
+            const pages = document.querySelectorAll('.page');
+            pages.forEach(page => page.classList.remove('active'));
+
+            const selectedPage = document.getElementById(pageName);
+            if (selectedPage) {
+                selectedPage.classList.add('active');
+            }
+
+            // Update nav menu
+            const navLinks = document.querySelectorAll('.nav-link');
+            navLinks.forEach(link => link.classList.remove('active'));
+            document.querySelector(`[data-page="${pageName}"]`).classList.add('active');
+
+            // Scroll to top
+            window.scrollTo(0, 0);
+
+            // Render content for specific pages
+            if (pageName === 'dashboard') {
+                renderAppointments();
+            } else if (pageName === 'admin') {
+                renderAdminTable();
+            }
+        }
+
+        // Navigation event listeners
+        document.querySelectorAll('.nav-link').forEach(link => {
+            link.addEventListener('click', (e) => {
+                e.preventDefault();
+                const pageName = link.getAttribute('data-page');
+                goToPage(pageName);
+            });
+        });
+
+        // Render appointments on dashboard
+        function renderAppointments() {
+            const appointmentsList = document.getElementById('appointmentsList');
+            const noAppointments = document.getElementById('noAppointments');
+
+            appointmentsList.innerHTML = '';
+
+            if (appointments.length === 0) {
+                noAppointments.style.display = 'block';
+                appointmentsList.style.display = 'none';
+                return;
+            }
+
+            noAppointments.style.display = 'none';
+            appointmentsList.style.display = 'grid';
+
+            appointments.forEach(apt => {
+                const card = document.createElement('div');
+                card.className = 'appointment-card';
+                card.innerHTML = `
+                    <div class="appointment-grid">
+                        <div class="appointment-field">
+                            <label>ФИО</label>
+                            <span>${apt.fio}</span>
+                        </div>
+                        <div class="appointment-field">
+                            <label>Животное</label>
+                            <span>${apt.animal}</span>
+                        </div>
+                        <div class="appointment-field">
+                            <label>Кличка</label>
+                            <span>${apt.nickname}</span>
+                        </div>
+                        <div class="appointment-field">
+                            <label>Телефон</label>
+                            <span>${apt.phone}</span>
+                        </div>
+                        <div class="appointment-field">
+                            <label>Дата</label>
+                            <span>${formatDate(apt.date)}</span>
+                        </div>
+                        <div class="appointment-field">
+                            <label>Время</label>
+                            <span>${apt.time}</span>
+                        </div>
+                    </div>
+                    <div class="appointment-actions">
+                        <button class="btn btn-secondary btn-small" onclick="openEditModal(${apt.id})">✏️ Редактировать</button>
+                        <button class="btn btn-danger btn-small" onclick="deleteAppointment(${apt.id})">🗑️ Удалить</button>
+                    </div>
+                `;
+                appointmentsList.appendChild(card);
+            });
+        }
+
+        // Render admin table
+        function renderAdminTable() {
+            const tableBody = document.getElementById('adminTableBody');
+            const noRecords = document.getElementById('noRecords');
+
+            tableBody.innerHTML = '';
+
+            if (appointments.length === 0) {
+                noRecords.style.display = 'block';
+                return;
+            }
+
+            noRecords.style.display = 'none';
+
+            appointments.forEach(apt => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${apt.fio}</td>
+                    <td>${apt.animal}</td>
+                    <td>${apt.nickname}</td>
+                    <td>${apt.phone}</td>
+                    <td>${formatDate(apt.date)}</td>
+                    <td>${apt.time}</td>
+                `;
+                tableBody.appendChild(row);
+            });
+        }
+
+        // Format date
+        function formatDate(dateStr) {
+            const date = new Date(dateStr);
+            return new Intl.DateTimeFormat('ru-RU', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric'
+            }).format(date);
+        }
+
+        // Appointment form submission
+        document.getElementById('appointmentForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const newAppointment = {
+                id: Math.max(...appointments.map(a => a.id), 0) + 1,
+                fio: document.getElementById('fio').value,
+                animal: document.getElementById('animal').value,
+                nickname: document.getElementById('nickname').value,
+                phone: document.getElementById('phone').value,
+                date: document.getElementById('date').value,
+                time: document.getElementById('time').value
+            };
+
+            appointments.push(newAppointment);
+            document.getElementById('appointmentForm').reset();
+            goToPage('dashboard');
+            alert('Запись успешно создана!');
+        });
+
+        // Edit modal functions
+        function openEditModal(id) {
+            const apt = appointments.find(a => a.id === id);
+            if (apt) {
+                currentEditingId = id;
+                document.getElementById('editFio').value = apt.fio;
+                document.getElementById('editAnimal').value = apt.animal;
+                document.getElementById('editNickname').value = apt.nickname;
+                document.getElementById('editPhone').value = apt.phone;
+                document.getElementById('editDate').value = apt.date;
+                document.getElementById('editTime').value = apt.time;
+
+                document.getElementById('editModal').classList.add('active');
+            }
+        }
+
+        function closeModal() {
+            document.getElementById('editModal').classList.remove('active');
+            currentEditingId = null;
+        }
+
+        // Edit form submission
+        document.getElementById('editForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+
+            const apt = appointments.find(a => a.id === currentEditingId);
+            if (apt) {
+                apt.fio = document.getElementById('editFio').value;
+                apt.animal = document.getElementById('editAnimal').value;
+                apt.nickname = document.getElementById('editNickname').value;
+                apt.phone = document.getElementById('editPhone').value;
+                apt.date = document.getElementById('editDate').value;
+                apt.time = document.getElementById('editTime').value;
+
+                renderAppointments();
+                closeModal();
+                alert('Запись успешно обновлена!');
+            }
+        });
+
+        // Delete appointment
+        function deleteAppointment(id) {
+            if (confirm('Вы уверены, что хотите удалить эту запись?')) {
+                appointments = appointments.filter(a => a.id !== id);
+                renderAppointments();
+                alert('Запись успешно удалена!');
+            }
+        }
+
+        // Close modal on outside click
+        document.getElementById('editModal').addEventListener('click', (e) => {
+            if (e.target.id === 'editModal') {
+                closeModal();
+            }
+        });
+
+        // Login form
+        document.getElementById('loginForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            goToPage('dashboard');
+            alert('Вы успешно вошли в систему!');
+        });
+
+        // Register form
+        document.getElementById('registerForm').addEventListener('submit', (e) => {
+            e.preventDefault();
+            const password = document.getElementById('regPassword').value;
+            const passwordConfirm = document.getElementById('regPasswordConfirm').value;
+
+            if (password !== passwordConfirm) {
+                alert('Пароли не совпадают!');
+                return;
+            }
+
+            goToPage('login');
+            alert('Аккаунт успешно создан! Теперь войдите в систему.');
+            document.getElementById('registerForm').reset();
+        });
+
+        // Logout
+        document.getElementById('logout-link').addEventListener('click', (e) => {
+            e.preventDefault();
+            goToPage('login');
+            alert('Вы вышли из системы!');
+        });
+
+        // Initialize
+        renderAppointments();
+    </script>
+</body>
+</html>
