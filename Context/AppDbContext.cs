@@ -10,5 +10,5 @@ public class AppDbContext : IdentityDbContext<AppUser>
 {
     public AppDbContext(DbContextOptions<AppDbContext> options)
         : base(options) { }
-    DbSet<Appointment> Appointments { get; set; }
+    public DbSet<Appointment> Appointments { get; set; }
 }

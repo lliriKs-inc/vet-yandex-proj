@@ -1,3 +1,5 @@
+using WebApplication5.Context.Entities;
+
 namespace WebApplication5.Models;
 
 public class DashboardViewModel
@@ -8,5 +10,5 @@ public class DashboardViewModel
 
     public int PetsCount { get; set; }
 
-    public List<AppointmentViewModel> Appointments { get; set; } = new();
+    public List<Appointment> Appointments { get; set; } = new();
 }

@@ -2,6 +2,7 @@ using System.Diagnostics;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using WebApplication5.Context;
 using WebApplication5.Context.Entities;
 using WebApplication5.Models;
@@ -15,38 +16,102 @@ public class HomeController : Controller
     private readonly UserManager<AppUser> _userManager;
     private readonly AppDbContext _appDbContext;
 
-    public HomeController(ILogger<HomeController> logger,  SignInManager<AppUser> signInManager,  UserManager<AppUser> userManager)
+    public HomeController(ILogger<HomeController> logger,  SignInManager<AppUser> signInManager,  UserManager<AppUser> userManager, AppDbContext appDbContext)
     {
         _logger = logger;
         _signInManager = signInManager;
         _userManager = userManager;
+        _appDbContext = appDbContext;
     }
     [Authorize]
     public async Task<IActionResult> Index()
     {
         var user = await _userManager.GetUserAsync(User);
-
+        var appointments = await _appDbContext.Appointments
+            .Where(a => a.UserPhone == user.PhoneNumber)
+            .OrderBy(a => a.Date)
+            .ToListAsync();
+        
         var model = new DashboardViewModel
         {
             FullName = $"{user.Surname} {user.Name} {user.Patronymic}",
             Email = user.Email,
             PhoneNumber = user.PhoneNumber,
-            PetsCount = 3,
-            Appointments = new List<AppointmentViewModel>()
+            PetsCount = 0,
+            Appointments = appointments
         };
 
         return View(model);
     }
+    
+    [Authorize]
+    [HttpGet]
+    public async Task<IActionResult> Edit(Guid id)
+    {
+        var appointment = await _appDbContext.Appointments.FindAsync(id);
+        if (appointment == null)
+            return NotFound();
 
-    public IActionResult Privacy()
-    {
-        return View();
+        var model = new CreateAppointmentViewModel
+        {
+            FullName = appointment.Fullname,
+            AnimalType = appointment.AnimalType,
+            Nickname = appointment.Nickname,
+            PhoneNumber = appointment.UserPhone,
+            Date = appointment.Date.ToLocalTime().Date,
+            Time = appointment.Date.ToLocalTime().TimeOfDay
+        };
+
+        ViewBag.AppointmentId = appointment.Id;
+        return View(model);
     }
-    [Authorize(Roles = "User")]
-    public IActionResult VetClinicPortal()
+    [Authorize]
+    [HttpPost]
+    public async Task<IActionResult> Edit(Guid id, CreateAppointmentViewModel model)
     {
-        return View();
+        if (!ModelState.IsValid)
+        {
+            ViewBag.AppointmentId = id;
+            return View(model);
+        }
+
+        var appointment = await _appDbContext.Appointments
+            .AsNoTracking()
+            .FirstOrDefaultAsync(x => x.Id == id);
+        if (appointment == null)
+            return NotFound();
+        
+        var localDateTime = model.Date.Add(model.Time);
+        var utcDateTime = TimeZoneInfo.ConvertTimeToUtc(
+            localDateTime,
+            TimeZoneInfo.Local 
+        );
+        
+        appointment = appointment with
+        {
+            Fullname = model.FullName,
+            AnimalType = model.AnimalType,
+            Nickname = model.Nickname,
+            UserPhone = model.PhoneNumber,
+            Date = utcDateTime
+        };
+
+        _appDbContext.Update(appointment);
+        await _appDbContext.SaveChangesAsync();
+
+        return RedirectToAction(nameof(Index));
     }
+    
+    [Authorize]
+    [HttpPost]
+    public async Task<IActionResult> Delete(Guid id)
+    {
+        _appDbContext.Remove(await _appDbContext.Appointments.FindAsync(id));
+        await _appDbContext.SaveChangesAsync();
+        return RedirectToAction(nameof(Index));
+    }
+    
+    
     [HttpGet]
     public async Task<IActionResult> TicketCreator()
     {
@@ -61,24 +126,32 @@ public class HomeController : Controller
 
         return View(model);
     }
-
+    [Authorize]
     [HttpPost]
     public async Task<IActionResult> TicketCreator(CreateAppointmentViewModel model)
     {
         if (!ModelState.IsValid)
             return View(model);
+        var localDateTime = model.Date.Add(model.Time);
 
+        var utcDateTime = TimeZoneInfo.ConvertTimeToUtc(
+            localDateTime,
+            TimeZoneInfo.Local 
+        );
         var user = await _userManager.GetUserAsync(User);
         var fullname = $"{user.Surname} {user.Name} {user.Patronymic}";
-        var appointment = new Appointment(Guid.NewGuid(), fullname, model.AnimalType, model.Nickname, user.PhoneNumber, model.Date);
-        _appDbContext.Add(appointment);
-        await _appDbContext.SaveChangesAsync();
+        _appDbContext.Appointments.Add(new Appointment(Guid.NewGuid(), fullname, model.AnimalType, model.Nickname, user.PhoneNumber, utcDateTime));
+        _appDbContext.SaveChanges();
 
         return RedirectToAction("Index", "Home");
     }
-    public IActionResult Admin()
+    public async Task<IActionResult> Admin()
     {
-        return View();
+        var model = await _appDbContext.Appointments
+            .AsNoTracking()
+            .OrderBy(a => a.Date)
+            .ToListAsync();
+        return View(model);
     }
     
     [HttpGet]
@@ -103,7 +176,7 @@ public class HomeController : Controller
             false);
 
         if (result.Succeeded)
-            return RedirectToAction("VetClinicPortal", "Home");
+            return RedirectToAction("Index", "Home");
 
         ModelState.AddModelError("", "Неверный логин или пароль");
         return View(model);

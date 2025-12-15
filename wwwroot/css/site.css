@@ -167,12 +167,14 @@ nav {
 .profile-avatar {
   width: 80px;
   height: 80px;
+  aspect-ratio: 1 / 1;
   border-radius: 50%;
   background: var(--primary-light);
   display: flex;
   align-items: center;
   justify-content: center;
   font-size: 2rem;
+  overflow: hidden; 
 }
 
 .profile-info h2 {

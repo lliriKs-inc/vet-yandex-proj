@@ -1,45 +1,62 @@
+@model List<WebApplication5.Context.Entities.Appointment>
 
 <!DOCTYPE html>
-
 <html>
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css"/>
-    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true"/>
-    <link rel="stylesheet" href="~/WebApplication5.styles.css" asp-append-version="true"/>
-    <title>Панель ветеринара - Ветеринарная клиника</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="stylesheet" href="~/WebApplication5.styles.css" asp-append-version="true" />
+    <title>Панель ветеринара</title>
 </head>
 <body>
 <div class="container">
     <div id="admin">
-        <div style="margin-bottom: 1.5rem;">
+
+        <div class="mb-4">
             <h2>Все записи в системе</h2>
-            <p style="color: var(--text-secondary);">Просмотр всех записей клиентов</p>
+            <p class="text-muted">Просмотр всех записей клиентов</p>
         </div>
 
-        <div style="overflow-x: auto;">
-            <table class="admin-table" id="adminTable">
-                <thead>
-                <tr>
-                    <th>ФИО</th>
-                    <th>Животное</th>
-                    <th>Кличка</th>
-                    <th>Телефон</th>
-                    <th>Дата</th>
-                    <th>Время</th>
-                </tr>
-                </thead>
-                <tbody id="adminTableBody">
-                <!-- Table rows will be inserted here -->
-                </tbody>
-            </table>
-        </div>
+        @if (Model == null || !Model.Any())
+        {
+            <div class="empty-state text-center mt-5">
+                <div class="fs-1">📊</div>
+                <p>Нет записей в системе</p>
+            </div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-striped table-bordered admin-table">
+                    <thead class="table-dark">
+                        <tr>
+                            <th>ФИО</th>
+                            <th>Животное</th>
+                            <th>Кличка</th>
+                            <th>Телефон</th>
+                            <th>Дата</th>
+                            <th>Время</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var appointment in Model)
+                        {
+                            <tr>
+                                <td>@appointment.Fullname</td>
+                                <td>@appointment.AnimalType</td>
+                                <td>@appointment.Nickname</td>
+                                <td>@appointment.UserPhone</td>
+                                <td>@appointment.Date.ToString("dd.MM.yyyy")</td>
+                                <td>@appointment.Date.ToString("HH:mm")</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
 
-        <div id="noRecords" class="empty-state" style="margin-top: 2rem;">
-            <div class="empty-state-icon">📊</div>
-            <p>Нет записей в системе</p>
-        </div>
     </div>
 </div>
 </body>
