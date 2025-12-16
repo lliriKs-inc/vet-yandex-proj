@@ -1,0 +1,32 @@
+﻿services:
+  webapplication5:
+    image: webapplication5
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: myapp
+    ports:
+      - "8084:8084"
+    environment:
+      ASPNETCORE_URLS: http://+:8084
+      ConnectionStrings__Default:
+        Host=db;
+        Port=5432;
+        Database=mydb;
+        Username=postgres;
+        Password=postgres;
+    depends_on:
+      - db
+  db:
+    image: postgres:16
+    container_name: vetclinic_db
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_DB: vetclinic_db
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+volumes:
+  pgdata:
