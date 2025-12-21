@@ -23,6 +23,7 @@ builder.Services.ConfigureApplicationCookie(options =>
 
 
 builder.Services.AddControllersWithViews();
+builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
@@ -65,5 +66,6 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 
+app.MapHealthChecks("/health");
 
 app.Run();
