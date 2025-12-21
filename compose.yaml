@@ -20,6 +20,8 @@
   db:
     image: postgres:16
     container_name: vetclinic_db
+    ports:
+      - "5432:5432"
     environment:
       POSTGRES_DB: vetclinic_db
       POSTGRES_USER: postgres

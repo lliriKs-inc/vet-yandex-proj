@@ -4,6 +4,8 @@ using WebApplication5.Context;
 
 var builder = WebApplication.CreateBuilder(args);
 
+
+
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
@@ -11,8 +13,6 @@ builder.Services.AddIdentity<AppUser, IdentityRole>()
     .AddEntityFrameworkStores<AppDbContext>()
     .AddDefaultTokenProviders();
 
-// Health checks (for ALB / monitoring)
-builder.Services.AddHealthChecks();
 
 // Add services to the container.
 builder.Services.ConfigureApplicationCookie(options =>
@@ -20,6 +20,7 @@ builder.Services.ConfigureApplicationCookie(options =>
     options.LoginPath = "/Home/Login";
     options.AccessDeniedPath = "/Account/AccessDenied";
 });
+
 
 builder.Services.AddControllersWithViews();
 
@@ -35,7 +36,6 @@ if (!app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 app.UseRouting();
-
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -60,12 +60,10 @@ app.MapStaticAssets();
 app.UseAuthentication();
 app.UseAuthorization();
 
-// Health endpoint (ALB will check this)
-app.MapHealthChecks("/health");
-
 app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
+
 
 app.Run();
