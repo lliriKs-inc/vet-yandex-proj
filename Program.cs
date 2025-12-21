@@ -38,23 +38,23 @@ app.UseHttpsRedirection();
 app.UseRouting();
 using (var scope = app.Services.CreateScope())
 {
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.Migrate();
-}
+    var services = scope.ServiceProvider;
+    var context = services.GetRequiredService<AppDbContext>();
 
-using (var scope = app.Services.CreateScope())
-{
-    var roleManager = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+    // ВАЖНО: Замените Migrate() на EnsureCreated()
+    // context.Database.Migrate(); 
+    context.Database.EnsureCreated(); // <--- ВОТ ЭТА СТРОКА СОЗДАСТ ТАБЛИЦЫ
 
-    string[] roles = new[] { "Admin", "User", "Manager" };
+    // Дальше идет ваш код создания ролей
+    var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
+    var roles = new[] { "Admin", "User", "Doctor" };
     foreach (var role in roles)
     {
         if (!await roleManager.RoleExistsAsync(role))
-        {
             await roleManager.CreateAsync(new IdentityRole(role));
-        }
     }
 }
+
 
 app.MapStaticAssets();
 app.UseAuthentication();
