@@ -9,14 +9,12 @@
       - "8084:8084"
     environment:
       ASPNETCORE_URLS: http://+:8084
-      ConnectionStrings__Default:
-        Host=db;
-        Port=5432;
-        Database=mydb;
-        Username=postgres;
-        Password=postgres;
+      # Исправлено: всё в одну строку и правильное имя базы vetclinic_db
+      ConnectionStrings__Default: "Host=db;Port=5432;Database=vetclinic_db;Username=postgres;Password=postgres;"
     depends_on:
-      - db
+      db:
+        condition: service_healthy  # Ждем, пока база скажет "я готова"
+
   db:
     image: postgres:16
     container_name: vetclinic_db
@@ -28,5 +26,12 @@
       POSTGRES_PASSWORD: postgres
     volumes:
       - pgdata:/var/lib/postgresql/data
+    # Добавлено: проверка, что порт 5432 реально отвечает
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d vetclinic_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
 volumes:
   pgdata:
