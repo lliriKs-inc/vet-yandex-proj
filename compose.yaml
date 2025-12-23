@@ -1,20 +1,19 @@
 ﻿services:
   webapplication5:
-    image: webapplication5
-    build:
-      context: .
-      dockerfile: Dockerfile
+    build: .
     container_name: myapp
     ports:
-      - "8084:8084"
+      - "8084:8080"
     environment:
-      ASPNETCORE_URLS: http://+:8084
-      # Исправлено: всё в одну строку и правильное имя базы vetclinic_db
-      ConnectionStrings__Default: "Host=db;Port=5432;Database=vetclinic_db;Username=postgres;Password=postgres;"
+      - ConnectionStrings__DefaultConnection=Host=db;Port=5432;Database=vetclinicdb;Username=postgres;Password=postgres
+      - ASPNETCORE_URLS=http://+:8080
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
+      - S3_BUCKET_NAME=${S3_BUCKET_NAME}
     depends_on:
       db:
-        condition: service_healthy  # Ждем, пока база скажет "я готова"
-
+        condition: service_healthy
+    restart: unless-stopped
   db:
     image: postgres:16
     container_name: vetclinic_db

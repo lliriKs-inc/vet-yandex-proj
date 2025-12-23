@@ -16,6 +16,9 @@ public class CreateAppointmentViewModel
     [Display(Name = "Кличка животного")]
     public string Nickname { get; set; }
 
+    [Display(Name = "Фото питомца (необязательно)")]
+    public IFormFile? Photo { get; set; }
+
     [Required]
     [Phone]
     [Display(Name = "Номер телефона")]

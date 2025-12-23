@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using WebApplication5.Context;
+using Amazon.S3;
+
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -8,6 +10,28 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddSingleton<IAmazonS3>(sp =>
+{
+    var accessKey = Environment.GetEnvironmentVariable("AWS_ACCESS_KEY_ID");
+    var secretKey = Environment.GetEnvironmentVariable("AWS_SECRET_ACCESS_KEY");
+
+    if (string.IsNullOrEmpty(accessKey) || string.IsNullOrEmpty(secretKey))
+    {
+        var logger = sp.GetRequiredService<ILogger<Program>>();
+        logger.LogWarning("⚠️ S3 credentials not found in environment variables!");
+    }
+
+    var config = new AmazonS3Config
+    {
+        ServiceURL = "https://storage.yandexcloud.net",
+        ForcePathStyle = true
+    };
+
+    return new AmazonS3Client(accessKey, secretKey, config);
+});
+
+
 
 builder.Services.AddIdentity<AppUser, IdentityRole>()
     .AddEntityFrameworkStores<AppDbContext>()

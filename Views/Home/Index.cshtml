@@ -97,6 +97,20 @@
 
                                 </div>
 
+                                @if (!string.IsNullOrEmpty(apt.PhotoUrl))
+                                {
+                                    <div class="appointment-photo" style="margin-top: 15px; margin-bottom: 15px;">
+                                        <label style="display: block; font-weight: 600; color: #666; margin-bottom: 8px;">Фото питомца</label>
+                                        <img src="@apt.PhotoUrl" 
+                                             alt="Фото @apt.Nickname" 
+                                             style="max-width: 100%; 
+                                                    max-height: 300px; 
+                                                    border-radius: 8px; 
+                                                    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+                                                    object-fit: cover;" />
+                                    </div>
+                                }
+
                                 <div class="appointment-actions">
                                     <a asp-action="Edit"
                                        asp-route-id="@apt.Id"

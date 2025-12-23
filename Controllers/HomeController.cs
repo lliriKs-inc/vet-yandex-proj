@@ -1,3 +1,5 @@
+using Amazon.S3;
+using Amazon.S3.Model;
 using System.Diagnostics;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -75,6 +77,67 @@ public class HomeController : Controller
             return View(model);
         }
 
+        string? newPhotoUrl = null;
+
+        if (model.Photo != null)
+        {
+            try
+            {
+                var s3Client = HttpContext.RequestServices.GetRequiredService<IAmazonS3>();
+                var bucketName = Environment.GetEnvironmentVariable("S3_BUCKET_NAME") 
+                                ?? "vet-clinic-b1gfvqa88jrcvav48j25";
+                
+                var oldAppointment = await _appDbContext.Appointments
+                    .AsNoTracking()
+                    .FirstOrDefaultAsync(x => x.Id == id);
+                
+                if (oldAppointment != null && !string.IsNullOrEmpty(oldAppointment.PhotoUrl))
+                {
+                    try
+                    {
+                        var oldUri = new Uri(oldAppointment.PhotoUrl);
+                        var oldPathAndQuery = Uri.UnescapeDataString(oldUri.PathAndQuery.TrimStart('/'));
+                        var oldKey = oldPathAndQuery.Substring(bucketName.Length + 1);
+                        
+                        _logger.LogInformation($"Deleting old photo: {oldKey}");
+                        
+                        await s3Client.DeleteObjectAsync(new Amazon.S3.Model.DeleteObjectRequest
+                        {
+                            BucketName = bucketName,
+                            Key = oldKey
+                        });
+                        
+                        _logger.LogInformation($"Old photo deleted: {oldKey}");
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, $"Failed to delete old photo: {oldAppointment.PhotoUrl}");
+                    }
+                }
+                
+                var newKey = $"appointments/{DateTime.UtcNow:yyyyMMdd}/{Guid.NewGuid()}_{model.Photo.FileName}";
+                
+                var uploadRequest = new Amazon.S3.Model.PutObjectRequest
+                {
+                    BucketName = bucketName,
+                    Key = newKey,
+                    InputStream = model.Photo.OpenReadStream(),
+                    ContentType = model.Photo.ContentType
+                };
+                
+                await s3Client.PutObjectAsync(uploadRequest);
+                newPhotoUrl = $"https://storage.yandexcloud.net/{bucketName}/{newKey}";
+                
+                _logger.LogInformation($"New photo uploaded: {newKey}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to upload updated photo to S3");
+            }
+        }
+
+
+
         var appointment = await _appDbContext.Appointments
             .AsNoTracking()
             .FirstOrDefaultAsync(x => x.Id == id);
@@ -93,8 +156,10 @@ public class HomeController : Controller
             AnimalType = model.AnimalType,
             Nickname = model.Nickname,
             UserPhone = model.PhoneNumber,
-            Date = utcDateTime
+            Date = utcDateTime,
+            PhotoUrl = newPhotoUrl ?? appointment.PhotoUrl
         };
+
 
         _appDbContext.Update(appointment);
         await _appDbContext.SaveChangesAsync();
@@ -106,10 +171,49 @@ public class HomeController : Controller
     [HttpPost]
     public async Task<IActionResult> Delete(Guid id)
     {
-        _appDbContext.Remove(await _appDbContext.Appointments.FindAsync(id));
+        var appointment = await _appDbContext.Appointments.FindAsync(id);
+        if (appointment == null)
+            return NotFound();
+        
+        _logger.LogInformation($"Deleting appointment {id}, PhotoUrl: {appointment.PhotoUrl}");
+        
+        if (!string.IsNullOrEmpty(appointment.PhotoUrl))
+        {
+            try
+            {
+                var s3Client = HttpContext.RequestServices.GetRequiredService<IAmazonS3>();
+                var bucketName = Environment.GetEnvironmentVariable("S3_BUCKET_NAME") 
+                                ?? "vet-clinic-b1gfvqa88jrcvav48j25";
+                
+                var uri = new Uri(appointment.PhotoUrl);
+                var pathAndQuery = Uri.UnescapeDataString(uri.PathAndQuery.TrimStart('/'));
+                var key = pathAndQuery.Substring(bucketName.Length + 1);
+                
+                _logger.LogInformation($"Attempting to delete S3 object - Bucket: {bucketName}, Key: {key}");
+                
+                var deleteRequest = new Amazon.S3.Model.DeleteObjectRequest
+                {
+                    BucketName = bucketName,
+                    Key = key
+                };
+                
+                await s3Client.DeleteObjectAsync(deleteRequest);
+                
+                _logger.LogInformation($"Photo deleted from S3: {key}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, $"Failed to delete photo from S3: {appointment.PhotoUrl}");
+            }
+        }
+        
+        _appDbContext.Remove(appointment);
         await _appDbContext.SaveChangesAsync();
+        
         return RedirectToAction(nameof(Index));
     }
+
+
     
     
     [HttpGet]
@@ -132,6 +236,37 @@ public class HomeController : Controller
     {
         if (!ModelState.IsValid)
             return View(model);
+
+        string? photoUrl = null;
+        if (model.Photo != null)
+        {
+            try
+            {
+                var s3Client = HttpContext.RequestServices.GetRequiredService<IAmazonS3>();
+                var bucketName = Environment.GetEnvironmentVariable("S3_BUCKET_NAME") 
+                                ?? "vet-clinic-b1gfvqa88jrcvav48j25";
+                
+                var key = $"appointments/{DateTime.UtcNow:yyyyMMdd}/{Guid.NewGuid()}_{model.Photo.FileName}";
+                
+                var request = new PutObjectRequest
+                {
+                    BucketName = bucketName,
+                    Key = key,
+                    InputStream = model.Photo.OpenReadStream(),
+                    ContentType = model.Photo.ContentType
+                };
+                
+                await s3Client.PutObjectAsync(request);
+                photoUrl = $"https://storage.yandexcloud.net/{bucketName}/{key}";
+                
+                _logger.LogInformation($"Photo uploaded to S3: {photoUrl}");
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to upload photo to S3");
+            }
+        }
+
         var localDateTime = model.Date.Add(model.Time);
 
         var utcDateTime = TimeZoneInfo.ConvertTimeToUtc(
@@ -140,7 +275,16 @@ public class HomeController : Controller
         );
         var user = await _userManager.GetUserAsync(User);
         var fullname = $"{user.Surname} {user.Name} {user.Patronymic}";
-        _appDbContext.Appointments.Add(new Appointment(Guid.NewGuid(), fullname, model.AnimalType, model.Nickname, user.PhoneNumber, utcDateTime));
+        
+        _appDbContext.Appointments.Add(new Appointment(
+            Guid.NewGuid(), 
+            fullname, 
+            model.AnimalType, 
+            model.Nickname, 
+            user.PhoneNumber, 
+            utcDateTime,
+            photoUrl
+        ));
         _appDbContext.SaveChanges();
 
         return RedirectToAction("Index", "Home");

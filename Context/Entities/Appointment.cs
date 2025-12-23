@@ -7,5 +7,6 @@ public record Appointment
     string AnimalType,
     string Nickname,
     string UserPhone,
-    DateTime Date
+    DateTime Date,
+    string? PhotoUrl = null
 );
