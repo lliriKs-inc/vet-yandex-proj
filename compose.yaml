@@ -1,9 +1,5 @@
 ﻿services:
-  # ============================================
-  # ПРИЛОЖЕНИЕ (используется везде)
-  # ============================================
   webapplication5:
-    # DEVELOPMENT: собираем локально (только если профиль dev)
     build:
       context: .
       dockerfile: Dockerfile
@@ -13,66 +9,18 @@
     
     environment:
       - ASPNETCORE_URLS=http://+:8080
-      - ConnectionStrings__DefaultConnection=Host=${POSTGRES_HOST:-postgres};Database=vetclinicdb;Username=postgres;Password=${POSTGRES_PASSWORD:-postgres};Port=5432
-      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-      - S3_BUCKET_NAME=${S3_BUCKET_NAME}
+      - ConnectionStrings__DefaultConnection=Host=`${POSTGRES_HOST};Database=vetclinicdb;Username=postgres;Password=`${POSTGRES_PASSWORD};Port=5432
+      - AWS_ACCESS_KEY_ID=`${AWS_ACCESS_KEY_ID}
+      - AWS_SECRET_ACCESS_KEY=`${AWS_SECRET_ACCESS_KEY}
+      - S3_BUCKET_NAME=`${S3_BUCKET_NAME}
+      - ASPNETCORE_ENVIRONMENT=`${ASPNETCORE_ENVIRONMENT:-Production}
     
     ports:
       - "8084:8080"
     
-    # В dev-режиме зависим от локальной БД
-    depends_on:
-      postgres:
-        condition: service_healthy
-        required: false  # Не обязательна в production (внешняя БД)
-    
     healthcheck:
       test: ["CMD-SHELL", "timeout 5 bash -c 'cat < /dev/null > /dev/tcp/localhost/8080' || exit 1"]
-      interval: 30s
+      interval: 15s
       timeout: 10s
-      retries: 3
-      start_period: 40s
-
-    
-    # Показываем, что в production этот сервис НЕ использует БД из compose
-    profiles:
-      - dev       # Активен в dev
-      - prod      # Активен в prod
-      - default   # Активен по умолчанию
-
-
-  # ============================================
-  # БАЗА ДАННЫХ (ТОЛЬКО для локальной разработки)
-  # ============================================
-  postgres:
-    image: postgres:15
-    container_name: vetclinic_db
-    restart: always
-    
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: vetclinicdb
-      PGDATA: /var/lib/postgresql/data/pgdata
-    
-    ports:
-      - "5432:5432"
-    
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-    
-    healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U postgres -d vetclinicdb"]
-      interval: 10s
-      timeout: 5s
       retries: 5
-    
-    # 🔑 КЛЮЧЕВОЕ: БД активна ТОЛЬКО в dev-режиме
-    profiles:
-      - dev
-
-
-volumes:
-  postgres_data:
-    driver: local
+      start_period: 40s
