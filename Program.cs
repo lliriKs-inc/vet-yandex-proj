@@ -1,3 +1,5 @@
+using Microsoft.AspNetCore.DataProtection;
+using Microsoft.AspNetCore.DataProtection.EntityFrameworkCore;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using WebApplication5.Context;
@@ -11,6 +13,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddDataProtection()
+    .PersistKeysToDbContext<AppDbContext>()
+    .SetApplicationName("VetClinic");
+
 builder.Services.AddSingleton<IAmazonS3>(sp =>
 {
     var accessKey = Environment.GetEnvironmentVariable("AWS_ACCESS_KEY_ID");
@@ -19,7 +25,7 @@ builder.Services.AddSingleton<IAmazonS3>(sp =>
     if (string.IsNullOrEmpty(accessKey) || string.IsNullOrEmpty(secretKey))
     {
         var logger = sp.GetRequiredService<ILogger<Program>>();
-        logger.LogWarning("⚠️ S3 credentials not found in environment variables!");
+        logger.LogWarning("(!) S3 credentials not found in environment variables!");
     }
 
     var config = new AmazonS3Config
@@ -38,7 +44,6 @@ builder.Services.AddIdentity<AppUser, IdentityRole>()
     .AddDefaultTokenProviders();
 
 
-// Add services to the container.
 builder.Services.ConfigureApplicationCookie(options =>
 {
     options.LoginPath = "/Home/Login";
@@ -51,11 +56,9 @@ builder.Services.AddHealthChecks();
 
 var app = builder.Build();
 
-// Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
 {
     app.UseExceptionHandler("/Home/Error");
-    // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
     app.UseHsts();
 }
 
@@ -65,12 +68,27 @@ using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
     var context = services.GetRequiredService<AppDbContext>();
+    var logger = services.GetRequiredService<ILogger<Program>>();
 
-    // ВАЖНО: Замените Migrate() на EnsureCreated()
-    // context.Database.Migrate(); 
-    context.Database.EnsureCreated(); // <--- ВОТ ЭТА СТРОКА СОЗДАСТ ТАБЛИЦЫ
+    // Retry logic для миграций (на случай временной недоступности БД)
+    var maxRetries = 5;
+    for (int i = 0; i < maxRetries; i++)
+    {
+        try
+        {
+            logger.LogInformation("Applying database migrations (attempt {Attempt}/{MaxRetries})...", i + 1, maxRetries);
+            context.Database.Migrate();
+            logger.LogInformation("Migrations applied successfully");
+            break;
+        }
+        catch (Exception ex) when (i < maxRetries - 1)
+        {
+            logger.LogWarning(ex, "Migration failed, retrying in 5 seconds...");
+            await Task.Delay(5000);
+        }
+    }
 
-    // Дальше идет ваш код создания ролей
+    // Создание ролей
     var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
     var roles = new[] { "Admin", "User", "Doctor" };
     foreach (var role in roles)
@@ -79,6 +97,7 @@ using (var scope = app.Services.CreateScope())
             await roleManager.CreateAsync(new IdentityRole(role));
     }
 }
+
 
 
 app.MapStaticAssets();

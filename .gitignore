@@ -55,8 +55,10 @@ bld/
 *.nuget.props
 *.nuget.targets
 
-# Entity Framework Migrations (если нужно игнорировать)
-# Migrations/
+# Entity Framework Migrations
+#  ВАЖНО: Migrations/ НЕ игнорируем - они часть кода!
+# Но игнорируем временные файлы дизайнера:
+*.Designer.cache
 
 # ========================================
 # Terraform
@@ -77,6 +79,7 @@ terraform.rc
 # Docker
 # ========================================
 docker-compose.override.yml
+.env
 
 # ========================================
 # OS Files
@@ -92,4 +95,3 @@ Desktop.ini
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-
