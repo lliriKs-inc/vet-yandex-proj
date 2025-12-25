@@ -105,6 +105,11 @@ app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllerRoute(
+    name: "ticket",
+    pattern: "ticket/{id:guid}",
+    defaults: new { controller = "Home", action = "Ticket" });
+
+app.MapControllerRoute(
     name: "default",
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();

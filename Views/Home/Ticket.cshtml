@@ -1,0 +1,32 @@
+@model WebApplication5.Models.TicketViewModel
+
+@{
+    ViewData["Title"] = "Талон";
+}
+
+<h2>Талон на приём</h2>
+
+<div class="card" style="max-width: 640px;">
+    <div class="card-body">
+        <h4 class="card-title">Кабинет: @Model.Cabinet</h4>
+
+        <p class="card-text">
+            <b>ФИО:</b> @Model.Fullname<br />
+            <b>Телефон:</b> @Model.UserPhone<br />
+            <b>Животное:</b> @Model.AnimalType<br />
+            <b>Кличка:</b> @Model.Nickname<br />
+            <b>Дата/время:</b> @Model.DateLocal
+        </p>
+
+        <hr />
+
+        <p class="card-text">
+            <b>QR payload (appointmentId):</b><br />
+            <code>@Model.QrPayload</code>
+        </p>
+
+        <p class="text-muted mb-0">
+            (Пока это веб-версия талона; на следующем шаге сделаем редирект на PDF из Object Storage.)
+        </p>
+    </div>
+</div>

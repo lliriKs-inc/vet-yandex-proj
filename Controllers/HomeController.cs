@@ -213,6 +213,44 @@ public class HomeController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    [Authorize]
+    [HttpGet]
+    public async Task<IActionResult> Ticket(Guid id)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user?.PhoneNumber is null) return Unauthorized();
+
+        var appointment = await _appDbContext.Appointments
+            .AsNoTracking()
+            .FirstOrDefaultAsync(a => a.Id == id);
+
+        if (appointment is null) return NotFound();
+
+        // Важно: пользователь должен видеть только свою запись
+        if (appointment.UserPhone != user.PhoneNumber) return Forbid();
+
+        // Делаем "рандомный" кабинет, но детерминированный от Guid
+        // чтобы не менялся при каждом открытии талона.
+        var letters = new[] { 'Р', 'П', 'Э', 'К' };
+        var bytes = appointment.Id.ToByteArray();
+
+        var letter = letters[bytes[0] % letters.Length];
+        var number = 100 + (bytes[1] % 9) * 100 + (bytes[2] % 10) * 10 + (bytes[3] % 10); // 100..999
+
+        var model = new TicketViewModel
+        {
+            AppointmentId = appointment.Id,
+            Fullname = appointment.Fullname,
+            UserPhone = appointment.UserPhone,
+            AnimalType = appointment.AnimalType,
+            Nickname = appointment.Nickname,
+            DateLocal = appointment.Date.ToLocalTime(),
+            Cabinet = $"{letter}-{number}",
+            QrPayload = appointment.Id.ToString()
+        };
+
+        return View(model);
+    }
 
     
     
