@@ -1,17 +1,19 @@
 import os
 import json
 import io
+import requests
 import boto3
-from datetime import datetime
+import qrcode
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
+from reportlab.lib.utils import ImageReader
 
 S3_ENDPOINT = "https://storage.yandexcloud.net"
 
 def handler(event, context):
     """
-    Пока без обращения к .NET — просто генерим test PDF,
-    кладём в Object Storage и возвращаем 302 на pre-signed URL
+    Генерирует PDF-талон: берёт данные из .NET, создаёт PDF с QR,
+    кладёт в Object Storage и возвращает 302 на pre-signed URL
     """
     
     # Достаём appointmentId из path parameters
@@ -25,12 +27,43 @@ def handler(event, context):
             "body": json.dumps({"error": "missing appointmentId"})
         }
     
+    app_url = os.environ.get("APP_URL")
+    secret = os.environ.get("TICKET_INTERNAL_SECRET")
     bucket = os.environ["TICKETS_BUCKET"]
     
-    # Генерим простой PDF
-    pdf_bytes = make_test_pdf(appt_id)
+    if not app_url or not secret:
+        return {
+            "statusCode": 500,
+            "body": json.dumps({"error": "APP_URL or SECRET not configured"})
+        }
     
-    # Пишем в Object Storage
+    # 1. Берём данные талона из .NET internal API
+    try:
+        r = requests.get(
+            f"{app_url.rstrip('/')}/internal/ticket/{appt_id}",
+            headers={"X-Internal-Secret": secret},
+            timeout=10
+        )
+    except Exception as e:
+        return {
+            "statusCode": 502,
+            "body": json.dumps({"error": f"failed to reach app: {str(e)}"})
+        }
+    
+    if r.status_code == 404:
+        return {"statusCode": 404, "body": "appointment not found"}
+    if r.status_code != 200:
+        return {
+            "statusCode": 502,
+            "body": json.dumps({"error": f"app returned {r.status_code}"})
+        }
+    
+    ticket = r.json()
+    
+    # 2. Генерим PDF
+    pdf_bytes = make_pdf(ticket)
+    
+    # 3. Пишем в Object Storage
     s3 = boto3.client(
         "s3",
         endpoint_url=S3_ENDPOINT,
@@ -47,32 +80,59 @@ def handler(event, context):
         ContentType="application/pdf"
     )
     
-    # Генерим pre-signed URL (действует 5 минут)
+    # 4. Генерим pre-signed URL
     url = s3.generate_presigned_url(
         ClientMethod="get_object",
         Params={"Bucket": bucket, "Key": key},
         ExpiresIn=300
     )
     
-    # Возвращаем 302 redirect
+    # 5. Возвращаем 302
     return {
         "statusCode": 302,
         "headers": {"Location": url},
         "body": ""
     }
 
-def make_test_pdf(appt_id):
-    """Создаёт простой PDF для теста"""
+def make_pdf(ticket: dict) -> bytes:
+    """Создаёт PDF с данными талона"""
     buf = io.BytesIO()
     c = canvas.Canvas(buf, pagesize=A4)
     w, h = A4
     
-    c.setFont("Helvetica-Bold", 20)
-    c.drawString(50, h - 100, "Тестовый талон")
+    cabinet = ticket.get("cabinet", "К-000")
+    appt_id = ticket["id"]
+    fullname = ticket.get("fullname", "")
+    animal = ticket.get("animalType", "")
+    nickname = ticket.get("nickname", "")
+    date_utc = ticket.get("dateUtc", "")
     
-    c.setFont("Helvetica", 14)
-    c.drawString(50, h - 140, f"ID записи: {appt_id}")
-    c.drawString(50, h - 160, f"Сгенерирован: {datetime.utcnow().isoformat()}")
+    # Заголовок
+    c.setFont("Helvetica-Bold", 20)
+    c.drawString(50, h - 80, "Талон на приём")
+    
+    # Кабинет крупно
+    c.setFont("Helvetica-Bold", 32)
+    c.drawString(50, h - 120, cabinet)
+    
+    # QR-код
+    qr_payload = ticket.get("qrPayload", appt_id)
+    qr_img = qrcode.make(qr_payload)
+    qr_buf = io.BytesIO()
+    qr_img.save(qr_buf, format="PNG")
+    qr_buf.seek(0)
+    c.drawImage(ImageReader(qr_buf), 50, h - 320, width=180, height=180)
+    
+    # Детали записи
+    c.setFont("Helvetica", 12)
+    y = h - 360
+    c.drawString(50, y, f"Запись: {appt_id}")
+    y -= 20
+    c.drawString(50, y, f"Питомец: {animal} «{nickname}»")
+    y -= 20
+    c.drawString(50, y, f"Владелец: {fullname}")
+    y -= 20
+    c.drawString(50, y, f"Дата (UTC): {date_utc}")
     
     c.showPage()
     c.save()
