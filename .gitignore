@@ -5,7 +5,8 @@
 *.env
 .env.local
 .env.production
-
+compose.dev.yaml
+.env.dev
 # AWS/S3 credentials
 aws-credentials.json
 credentials.json

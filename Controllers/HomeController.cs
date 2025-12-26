@@ -1,6 +1,7 @@
 using Amazon.S3;
 using Amazon.S3.Model;
 using System.Diagnostics;
+using System.Net;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -213,7 +214,49 @@ public class HomeController : Controller
         return RedirectToAction(nameof(Index));
     }
 
+    [Authorize]
+    [HttpGet("/ticket/{id:guid}/pdf")]
+    public async Task<IActionResult> TicketPdf(Guid id)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user?.PhoneNumber is null) return Unauthorized();
 
+        var appt = await _appDbContext.Appointments.AsNoTracking()
+            .FirstOrDefaultAsync(a => a.Id == id);
+
+        if (appt is null) return NotFound();
+
+        if (appt.UserPhone != user.PhoneNumber)
+            return Forbid();
+
+        var apiBase = Environment.GetEnvironmentVariable("TICKET_API_URL");
+        var secret = Environment.GetEnvironmentVariable("TICKET_INTERNAL_SECRET");
+
+        if (string.IsNullOrWhiteSpace(apiBase) || string.IsNullOrWhiteSpace(secret))
+            return StatusCode(500, "Ticket API is not configured");
+
+        // Важно: запретить авто-redirect, иначе HttpClient сам уйдёт по ссылке и ты потеряешь Location
+        var handler = new HttpClientHandler { AllowAutoRedirect = false };
+        using var http = new HttpClient(handler);
+
+        var req = new HttpRequestMessage(HttpMethod.Get, $"{apiBase.TrimEnd('/')}/ticket/{id}");
+        req.Headers.Add("X-Internal-Secret", secret);
+
+        var resp = await http.SendAsync(req);
+
+        if (resp.StatusCode == HttpStatusCode.Found || resp.StatusCode == HttpStatusCode.Redirect)
+        {
+            var location = resp.Headers.Location?.ToString();
+            if (string.IsNullOrWhiteSpace(location))
+                return StatusCode(502, "Ticket service returned redirect without Location");
+
+            return Redirect(location); // браузер скачает PDF по pre-signed URL
+        }
+
+        // Пробрасываем понятную ошибку
+        var body = await resp.Content.ReadAsStringAsync();
+        return StatusCode((int)resp.StatusCode, body);
+    }
     
     
     [HttpGet]

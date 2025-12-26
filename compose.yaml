@@ -3,21 +3,24 @@
     build:
       context: .
       dockerfile: Dockerfile
-    
+
     container_name: myapp
     restart: always
-    
+
     environment:
-      - ASPNETCORE_URLS=http://+:8080
-      - ConnectionStrings__DefaultConnection=Host=${POSTGRES_HOST};Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD};Port=5432
-      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID}
-      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY}
-      - S3_BUCKET_NAME=${S3_BUCKET_NAME}
-      - ASPNETCORE_ENVIRONMENT=${ASPNETCORE_ENVIRONMENT}
-    
+      ASPNETCORE_URLS: "http://+:8080"
+
+      ConnectionStrings__DefaultConnection: "Host=${POSTGRES_HOST};Port=5432;Database=${POSTGRES_DB};Username=${POSTGRES_USER};Password=${POSTGRES_PASSWORD}"
+      TICKET_INTERNAL_SECRET: "${TICKET_INTERNAL_SECRET}"
+      AWS_ACCESS_KEY_ID: "${AWS_ACCESS_KEY_ID}"
+      AWS_SECRET_ACCESS_KEY: "${AWS_SECRET_ACCESS_KEY}"
+      S3_BUCKET_NAME: "${S3_BUCKET_NAME}"
+
+      ASPNETCORE_ENVIRONMENT: "${ASPNETCORE_ENVIRONMENT}"
+
     ports:
       - "8084:8080"
-    
+
     healthcheck:
       test: ["CMD-SHELL", "curl -f http://localhost:8080/health || exit 1"]
       interval: 15s
