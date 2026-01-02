@@ -7,6 +7,13 @@ import qrcode
 from reportlab.pdfgen import canvas
 from reportlab.lib.pagesizes import A4
 from reportlab.lib.utils import ImageReader
+from reportlab.pdfbase import pdfmetrics
+from reportlab.pdfbase.ttfonts import TTFont
+
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+
+pdfmetrics.registerFont(TTFont("DejaVuSans", os.path.join(BASE_DIR, "DejaVuSans.ttf")))
+pdfmetrics.registerFont(TTFont("DejaVuSans-Bold", os.path.join(BASE_DIR, "DejaVuSans-Bold.ttf")))
 
 S3_ENDPOINT = "https://storage.yandexcloud.net"
 
@@ -108,11 +115,11 @@ def make_pdf(ticket: dict) -> bytes:
     date_utc = ticket.get("dateUtc", "")
     
     # Заголовок
-    c.setFont("Helvetica-Bold", 20)
+    c.setFont("DejaVuSans-Bold", 20)
     c.drawString(50, h - 80, "Талон на приём")
     
     # Кабинет крупно
-    c.setFont("Helvetica-Bold", 32)
+    c.setFont("DejaVuSans-Bold", 32)
     c.drawString(50, h - 120, cabinet)
     
     # QR-код
@@ -124,7 +131,7 @@ def make_pdf(ticket: dict) -> bytes:
     c.drawImage(ImageReader(qr_buf), 50, h - 320, width=180, height=180)
     
     # Детали записи
-    c.setFont("Helvetica", 12)
+    c.setFont("DejaVuSans", 12)
     y = h - 360
     c.drawString(50, y, f"Запись: {appt_id}")
     y -= 20
